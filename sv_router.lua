@@ -49,13 +49,24 @@ end
 
 -- Incomming request
 SetHttpHandler(function(req, res)
-  print(('HTTP Request from %s'):format(req.address))
+  print('Incoming request from ' .. req.address)
   local path, query = GetParsedUrl(req.path)
 
   if path then
     local routeExists, routeData = GetRoute(path)
 
     if routeExists and req.method == routeData.method then
+      -- Middleware is configured
+      if routeData.middleWare then
+        local p = promise.new()
+
+        routeData.middleWare(req, res, function()
+          p:resolve()
+        end)
+
+        Citizen.Await(p)
+      end
+
       req.path = path
       req.query = query
       res.sendFile = function(filePath)
@@ -86,8 +97,21 @@ function ConfigureRoute(route, handler)
   assert(type(handler) == 'function', 'Invalid Lua type at argument #2, expected function, got ' .. type(handler))
 
   local foundRoute = routes[route]
-
-  if foundRoute then
-    foundRoute.handler = handler
+  if not foundRoute then
+    return
   end
+
+  foundRoute.handler = handler
+end
+
+function ConfigureMiddleware(route, handler)
+  assert(type(route) == 'string', 'Invalid Lua type at argument #1, expected string, got ' .. type(route))
+  assert(type(handler) == 'function', 'Invalid Lua type at argument #2, expected function, got ' .. type(handler))
+
+  local foundRoute = routes[route]
+  if not foundRoute then
+    return
+  end
+
+  foundRoute.middleWare = handler
 end
