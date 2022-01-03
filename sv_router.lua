@@ -106,23 +106,15 @@ end
 function ConfigureRoute(route, handler)
   assert(type(route) == 'string', 'Invalid Lua type at argument #1, expected string, got ' .. type(route))
   assert(type(handler) == 'function', 'Invalid Lua type at argument #2, expected function, got ' .. type(handler))
+  assert(routes[route], 'Invalid route ' .. route)
 
-  local foundRoute = routes[route]
-  if not foundRoute then
-    return
-  end
-
-  foundRoute.handler = handler
+  routes[route].handler = handler
 end
 
 function ConfigureMiddleware(route, handler)
   assert(type(route) == 'string', 'Invalid Lua type at argument #1, expected string, got ' .. type(route))
   assert(type(handler) == 'function', 'Invalid Lua type at argument #2, expected function, got ' .. type(handler))
+  assert(routes[route], 'Invalid route ' .. route)
 
-  local foundRoute = routes[route]
-  if not foundRoute then
-    return
-  end
-
-  foundRoute.middleWare = handler
+  routes[route].middleWare = handler
 end
