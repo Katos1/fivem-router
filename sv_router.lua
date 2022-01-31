@@ -31,20 +31,13 @@ end
 
 local function SendFile(res, filePath)
   assert(type(filePath) == 'string', 'Invalid Lua type at argument #1, expected string, got ' .. type(filePath))
-  local fileHandle = io.open(filePath, 'rb')
+  local fileContext = LoadResourceFile(GetCurrentResourceName(), filePath)
 
-  -- File doesn't exist
-  if not fileHandle then
+  if not fileContext then
     return
   end
 
-  local data = fileHandle:read('*a')
-  -- File does not have any contents or failed to read
-  if not data then
-    return
-  end
-
-  res.send(data)
+  res.send(fileContext)
 end
 
 -- Incomming request
@@ -59,17 +52,6 @@ SetHttpHandler(function(req, res)
       -- Middleware is configured
       if routeData.middleWare then
         local p = promise.new()
-
-        -- Set a timeout incase the "next" function doesn't get called
-        CreateThread(function()
-          local msec = 1500
-          Wait(msec)
-
-          if p.state == 0 then
-            print(('[^1WARNING^7] Middleware at route %s timed out after %s ms'):format(path, msec))
-            p:reject()
-          end
-        end)
 
         routeData.middleWare(req, res, function()
           p:resolve()
