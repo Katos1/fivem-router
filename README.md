@@ -6,7 +6,7 @@ CreateThread(function()
   local welcomeRoute = AddRoute('GET', '/')
   local byeRoute = AddRoute('GET', '/bye')
   
-  ConfigureRoute(byeRoute, function(req, res)
+  ConfigureRoute(welcomeRoute, function(req, res)
     res.send('Welcome')
   end)
 
