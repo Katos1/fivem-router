@@ -1,7 +1,12 @@
 local routes = {}
-local acceptedMethods = {GET = true, POST = true, PUT = true, DELETE = true}
+local acceptedMethods = {
+  GET = true, 
+  POST = true, 
+  PUT = true, 
+  DELETE = true
+}
 
-local function GetRoute(route)
+local function getRoute(route)
   assert(type(route) == 'string', 'Invalid Lua type at argument #1, expected string, got ' .. type(route))
 
   if routes[route] then
@@ -11,7 +16,7 @@ local function GetRoute(route)
   return false, nil
 end
 
-local function GetParsedUrl(str)
+local function getParsedUrl(str)
   assert(type(str) == 'string', 'Invalid Lua type at argument #1, expected string, got ' .. type(str))
   local path, query
 
@@ -29,7 +34,7 @@ local function GetParsedUrl(str)
   return path, query
 end
 
-local function SendFile(res, filePath)
+local function sendFile(res, filePath)
   assert(type(filePath) == 'string', 'Invalid Lua type at argument #1, expected string, got ' .. type(filePath))
   local fileContext = LoadResourceFile(GetCurrentResourceName(), filePath)
 
@@ -43,10 +48,10 @@ end
 -- Incomming request
 SetHttpHandler(function(req, res)
   print('Incoming request from ' .. req.address)
-  local path, query = GetParsedUrl(req.path)
+  local path, query = getParsedUrl(req.path)
 
   if path then
-    local routeExists, routeData = GetRoute(path)
+    local routeExists, routeData = getRoute(path)
 
     if routeExists and req.method == routeData.method then
       -- Middleware is configured
@@ -63,7 +68,7 @@ SetHttpHandler(function(req, res)
       req.path = path
       req.query = query
       res.sendFile = function(filePath)
-        SendFile(res, filePath)
+        sendFile(res, filePath)
       end
 
       return routeData.handler(req, res)
